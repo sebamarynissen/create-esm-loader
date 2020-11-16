@@ -68,7 +68,7 @@ export default {
 ```
 Those methods respectively correspond to the `resolve()`, `getFormat()`, `getSource()` and `transform()` [loader hooks](https://nodejs.org/api/esm.html#esm_hooks) from Node.
 The reason why the names don't match is to make abstraction of the underlying Node mechanism, which might still change in the future.
-The hope is that if this happens, only this module will need to be updated and not the way you've writte your loader configurations.
+The hope is that if this happens, only this module will need to be updated and not the way you've written your loader configurations.
 
 Every hook is optional and can be an async function, which is useful if you need to do some async logic within it.
 If the hook doesn't return anything, other hooks will be tried until the handling of the hook is given back to Node.
