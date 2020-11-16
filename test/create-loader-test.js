@@ -248,4 +248,25 @@ describe('The create loader function', function() {
 
 	});
 
+	it('chains transform hooks', async function() {
+
+		function transform(source, options) {
+			return {
+				source: String(source).repeat(2),
+			};
+		};
+
+		this.create({
+			loaders: [
+				{ transform },
+				{ transform },
+			],
+		});
+		let src = await this.import(self);
+		let file = path.join(__dirname, self);
+		let original = await fs.readFile(file);
+		expect(src).to.have.length(4*original.length);
+
+	});
+
 });
