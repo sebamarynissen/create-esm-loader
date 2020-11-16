@@ -2,12 +2,22 @@
 import fs from 'fs/promises';
 import { URL, fileURLToPath, pathToFileURL } from 'url';
 import path from 'path';
-import create from 'create-esm-loader';
+import create, { keys } from 'create-esm-loader';
 import chai, { expect } from './chai.js';
 
 const self = './create-loader-test.js';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('The create loader function', function() {
+
+	// Helper function for mocking a loader definition all witht he same 
+	// function.
+	function $(fn) {
+		return keys.reduce((mem, key) => {
+			mem[key] = fn;
+			return mem;
+		}, {});
+	}
 
 	before(function() {
 		this.create = function(...opts) {
@@ -82,7 +92,6 @@ describe('The create loader function', function() {
 
 	it('uses a specific resolver', async function() {
 
-		const __dirname = path.dirname(fileURLToPath(import.meta.url));
 		this.create({
 			resolve(specifier, ctx) {
 				if (specifier.startsWith('@')) {
@@ -97,6 +106,74 @@ describe('The create loader function', function() {
 		let src = await this.import('@source.js');
 		let contents = await fs.readFile(file);
 		expect(contents+'').to.equal(src);
+
+	});
+
+	it('passes global options to the hooks', async function() {
+
+		let options = { foo: 'bar' };
+		let spy = chai.spy((_, ctx) => {
+			expect(ctx).to.have.property('foo');
+		});
+		this.create({
+			loaders: [$(spy)],
+			options,
+		});
+
+		await this.import(self);
+		expect(spy).to.have.been.called(4);
+
+	});
+
+	it('passes local options to the hooks', async function() {
+
+		let spy = chai.spy((_, ctx) => {
+			expect(ctx).to.have.property('local');
+			expect(ctx).to.have.property('global');
+			expect(ctx.local).to.be.true;
+			expect(ctx.global).to.be.true;
+		});
+		this.create({
+			loaders: [{
+				hooks: $(spy),
+				options: {
+					local: true,
+				},
+			}],
+			options: {
+				global: true,
+			},
+		});
+
+		await this.import(self);
+		expect(spy).to.have.been.called(4);
+
+	});
+
+	it('uses a loader from a file', async function() {
+
+		let source = 'export const foo = "bar";';
+		let file = path.join(__dirname, 'files/file-loader.js');
+		let url = pathToFileURL(file).href;
+		this.create({
+			loaders: [url],
+			options: {
+				source,
+			},
+		});
+		let src = await this.import(self);
+		expect(src).to.equal(source);
+
+
+	});
+
+	it('uses a loader from a file as only option', async function() {
+
+		let file = path.join(__dirname, 'files/file-loader.js');
+		let url = pathToFileURL(file).href;
+		this.create(url);
+		let src = await this.import(self);
+		expect(src).to.equal('null');
 
 	});
 
