@@ -177,4 +177,58 @@ describe('The create loader function', function() {
 
 	});
 
+	it('uses a combination of loaders', async function() {
+
+		let one = {
+			resolve(specifier) {
+				if (specifier.startsWith('@')) {
+					let name = specifier.slice(1);
+					let file = path.join(__dirname, 'files', name);
+					let url = pathToFileURL(file).href;
+					return { url };
+				}
+			},
+		};
+		let two = {
+			transform(source) {
+				return { source: String(source).repeat(2) };
+			},
+		};
+
+		this.create({
+			loaders: [one, two],
+		});
+		let src = await this.import('@source.js');
+		let file = path.join(__dirname, 'files/source.js');
+		let original = await fs.readFile(file);
+		expect(src).to.equal(String(original).repeat(2));
+
+	});
+
+	it('uses a nested array of loaders', async function() {
+
+		let one = {
+			resolve: [(specifier) => {
+				if (specifier.startsWith('@')) {
+					let name = specifier.slice(1);
+					let file = path.join(__dirname, 'files', name);
+					let url = pathToFileURL(file).href;
+					return { url };
+				}
+			}],
+		};
+		let two = {
+			transform(source) {
+				return { source: String(source).repeat(2) };
+			},
+		};
+
+		this.create([one, [two]]);
+		let src = await this.import('@source.js');
+		let file = path.join(__dirname, 'files/source.js');
+		let original = await fs.readFile(file);
+		expect(src).to.equal(String(original).repeat(2));
+
+	});
+
 });
