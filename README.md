@@ -126,8 +126,37 @@ const loader = createLoader({
 });
 ```
 
-## Examples
+## Combining loaders
 
+It's important to understand that the signature of the loader hooks look like this:
+```js
+resolve: specifier -> { url }
+format: url -> { format }
+fetch: url -> { source }
+transform: source -> { source }
+```
+This means that except for the transform hook, every hook returns something fundamentally different than its input.
+As a consequence, `resolve()`, `format()` and `fetch()` *will not* loop the entire stack.
+Once a hook returns something truthy, the other functions registered for that hook *will not be called*.
+As such the order of the loaders is important to take into account.
+
+The only difference here is the transform hook.
+If you register multiple transform hooks, they will all be called and properly chained:
+
+```js
+function transform(source, ctx) {
+  return {
+    source: String(source).repeat(2),
+  };
+}
+
+// Source will be 4 times as big.
+createLoader({
+  loaders: [ { transform }, { transform } ],
+});
+```
+
+## Examples
 ### 1. Compile TypeScript on the fly
 
 ```js
@@ -181,16 +210,4 @@ export { resolve, getFormat, getSource, transformSource };
 
 // Usage:
 import Component from '@components/component.js';
-```
-
-### 3. Combine the loaders from above
-
-```js
-const { resolve, getFormat, getSource, transformSource } = createLoader({
-  loaders: [
-    directoryLoader,
-    tsLoader,
-  ],
-});
-export { resolve, getFormat, getSource, transformSource };
 ```
