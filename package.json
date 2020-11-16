@@ -3,9 +3,9 @@
   "version": "0.0.1-alpha",
   "description": "A utility library for creating Node loader hooks",
   "type": "module",
-  "main": "lib/index.js",
+  "main": "lib/create-loader.js",
   "exports": {
-    ".": "./lib/index.js"
+    ".": "./lib/create-loader.js"
   },
   "scripts": {
     "test": "mocha"
