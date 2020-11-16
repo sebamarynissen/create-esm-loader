@@ -167,6 +167,23 @@ describe('The create loader function', function() {
 
 	});
 
+	it('uses a loader from a file while passing the options', async function() {
+
+		let file = path.join(__dirname, 'files/file-loader.js');
+		let url = pathToFileURL(file).href;
+		this.create({
+			loaders: [{
+				loader: url,
+				options: {
+					foo: 'bar',
+				},
+			}],
+		});
+		let src = await this.import(self);
+		expect(src).to.equal('null');
+
+	});
+
 	it('uses a loader from a file as only option', async function() {
 
 		let file = path.join(__dirname, 'files/file-loader.js');
