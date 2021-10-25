@@ -2,7 +2,7 @@
 import create from 'create-esm-loader';
 import { default as ts } from 'typescript';
 
-export const { resolve, getFormat, getSource, transformSource, load } = create({
+const config = {
 	resolve(specifier, opts) {
 		if (!specifier.endsWith('.ts')) return;
 		return {
@@ -22,4 +22,13 @@ export const { resolve, getFormat, getSource, transformSource, load } = create({
 		});
 		return outputText;
 	},
-});
+};
+export default config;
+
+export const {
+	resolve,
+	getFormat,
+	getSource,
+	transformSource,
+	load,
+} = create(config);

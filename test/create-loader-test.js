@@ -111,6 +111,21 @@ describe('The create loader function', function() {
 
 	});
 
+	it('passes local options to the hooks', async function() {
+
+		let options = { foo: 'bar' };
+		let spy = chai.spy((_, ctx) => {
+			expect(ctx).to.have.property('foo');
+		});
+		this.create([{
+			hooks: $(spy),
+			options,
+		}]);
+
+		await this.import(self);
+		expect(spy).to.have.been.called();
+	});
+
 	it('passes global options to the hooks', async function() {
 
 		let options = { foo: 'bar' };

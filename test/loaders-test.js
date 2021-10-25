@@ -8,6 +8,8 @@ import { expect } from 'chai';
 
 describe('ESM loaders', function() {
 
+	this.slow(3000);
+
 	before(function() {
 		this.loader = function(specifier) {
 			const url = new URL(specifier, import.meta.url).href;
@@ -19,6 +21,7 @@ describe('ESM loaders', function() {
 					cwd: process.cwd(),
 					execArgv: [
 						`--experimental-loader=${url}`,
+						'--no-warnings',
 					],
 				});
 				return new Promise((resolve, reject) => {
@@ -57,6 +60,39 @@ describe('ESM loaders', function() {
 		export default fn('I like TypeScript');
 		`);
 		expect(result).to.equal('I don\'t like TypeScript');
+
+	});
+
+	it('a composite loader', async function() {
+
+		const server = new http.Server((req, res) => {
+			res.end(`
+			export default function(input: string): string {
+				return 'JavaScript';
+			}`);
+		});
+		await new Promise(resolve => server.listen(resolve));
+		const url = `http://127.0.0.1:${server.address().port}/fn.ts`;
+
+		const run = this.loader('./loaders/composite.js');
+		let result = await run(`
+		import fn from ${JSON.stringify(url)};
+		export default fn('TypScript');
+		`)
+		expect(result).to.equal('JavaScript');
+
+		await new Promise(resolve => server.close(resolve));
+
+	});
+
+	it('a loader that accepts certain extensions as options', async function() {
+
+		const run = this.loader('./loaders/extensions.js');
+		let result = await run(`
+		import foo from './files/foo.es';
+		export default foo;
+		`);
+		expect(result).to.equal('bar');
 
 	});
 

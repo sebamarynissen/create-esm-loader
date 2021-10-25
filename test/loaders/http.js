@@ -2,7 +2,7 @@
 import { get } from 'node:http';
 import create from 'create-esm-loader';
 
-export const { resolve, getFormat, getSource, transformSource, load } = create({
+const config = {
 	resolve(specifier, opts = {}) {
 		if (specifier.startsWith('http://')) {
 			return { url: specifier };
@@ -27,4 +27,13 @@ export const { resolve, getFormat, getSource, transformSource, load } = create({
 		});
 		return { source };
 	},
-});
+};
+export default config;
+
+export const {
+	resolve,
+	getFormat,
+	getSource,
+	transformSource,
+	load,
+} = create(config);
