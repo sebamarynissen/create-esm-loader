@@ -6,7 +6,7 @@
 Use at own risk and **DO NOT** rely on it in production.
 
 Node 14 provides full support for native ES Modules without the need for transpilation.
-While CommonJS is likely not to go anywhere soon, it is good practice to at least start thinking about migrating your codebase from CommonJS to ESM.
+While CommonJS is likely not to go anywhere soon, it is good practice to [at least start thinking about migrating your codebase from CommonJS to ESM](https://blog.sindresorhus.com/get-ready-for-esm-aa53530b3f77).
 In the `require`-world, we had [require.extensions](https://nodejs.org/api/modules.html#modules_require_extensions) if we wanted to load non-JS files into Node.
 You could use this, for example, to load TypeScript files and compile them just-in-time.
 While this was not a good idea in production, it was a nice to have in development.
@@ -25,27 +25,39 @@ but you guessed that, right?
 
 ## Usage
 
-ESM loaders must be written in ESM format.
-This means that Node needs to interpret it as an ES Module as well, which means you either need to use the `.mjs` extension, or make sure that the nearest `package.json` contains a `{ "type": "module" }` field.
-For more info, see https://nodejs.org/api/esm.html#esm_enabling.
-
 `create-esm-loader` is inspired by Webpack.
-You can start to create loaders like this:
+You can pass it a configuration object and it will return a set of [loader hooks](https://nodejs.org/api/esm.html#hooks) which you then have to export manually.
+This typically looks like
 ```js
-// loader.mjs
+// loader.js
 import createLoader from 'create-esm-loader';
-
-const loader = createLoader(config);
-
-// In order for a loader to work on Node, you must export the appropriate hooks:
-const { resolve, getFormat, getSource, transformSource } = loader;
-export { resolve, getFormat, getSource, transformSource };
+export const { resolve, load } = createLoader(config);
 ```
 
 Subsequently you have to run node as 
 ```
 node --experimental-loader ./path/to/loader.mjs your-file.js
 ```
+
+Note that in Node 16.12, the loader hooks [have changed](https://nodejs.org/docs/v16.12.0/api/esm.html#esm_loaders).
+In previous versions, **including `16.11`**, you had to export `resolve()`, `getFormat()`, `getSource()` and `transformSource()`.
+In Node `>=16.12.0`, you have to export `resolve()` and `load()` instead.
+
+`create-esm-loader` is backwards compatible and is able to handle both.
+This means that if you're writing a loader that needs to support `<16.12`, you have to export
+```js
+export const {
+  resolve,
+  getFormat,
+  getSource,
+  transformSource,
+  load,
+} = createLoader(config);
+```
+
+ESM loaders must be written in ESM format.
+This means that Node needs to interpret it as an ES Module as well, which means you either need to use the `.mjs` extension, or make sure that the nearest `package.json` contains a `{ "type": "module" }` field.
+For more info, see https://nodejs.org/api/esm.html#esm_enabling.
 
 ### Basic configuration
 
@@ -66,9 +78,8 @@ export default {
   },
 };
 ```
-Those methods respectively correspond to the `resolve()`, `getFormat()`, `getSource()` and `transform()` [loader hooks](https://nodejs.org/api/esm.html#esm_hooks) from Node.
-The reason why the names don't match is to make abstraction of the underlying Node mechanism, which might still change in the future.
-The hope is that if this happens, only this module will need to be updated and not the way you've written your loader configurations.
+Those methods used to correspond respectively to the `resolve()`, `getFormat()`, `getSource()` and `transform()` [loader hooks](https://nodejs.org/docs/latest-v14.x/api/esm.html#esm_loaders) from Node, but as mentioned above the `getFormat()`, `getSource()` and `transform()` hooks have now been merged into a single `load()` hook.
+The api of this module has not changed as it's explicit goal is to hide how Node handles loaders internally.
 
 Every hook is optional and can be an async function, which is useful if you need to do some async logic within it.
 If the hook doesn't return anything, other hooks will be tried until the handling of the hook is given back to Node.
@@ -160,8 +171,6 @@ createLoader({
 ### 1. Compile TypeScript on the fly
 
 ```js
-import { URL } from 'url';
-
 const tsLoader = {
   resolve(specifier, opts) {
     if (specifier.endsWith('.ts')) {
@@ -177,12 +186,21 @@ const tsLoader = {
   },
   transform(source, opts) {
     return {
-      source: ts.compile(String(source)),
+      source: ts.transpileModule(String(source), {
+        compilerOptions: {
+          module: ts.ModuleKind.ES2020,
+        },
+      }),
     };
   },
 };
-const { resolve, getFormat, getSource, transformSource } = createLoader(tsLoader);
-export { resolve, getFormat, getSource, transformSource };
+export const {
+  resolve,
+  getFormat,
+  getSource,
+  transformSource,
+  load,
+} = createLoader(tsLoader);
 
 // Usage:
 import file from './file.ts';
@@ -205,8 +223,13 @@ const directoryLoader = {
     }
   },
 };
-const { resolve, getFormat, getSource, transformSource } = createLoader(directoryLoader);
-export { resolve, getFormat, getSource, transformSource };
+export const {
+  resolve,
+  getFormat,
+  getSource,
+  transformSource,
+  load,
+} = createLoader(directoryLoader);
 
 // Usage:
 import Component from '@components/component.js';
