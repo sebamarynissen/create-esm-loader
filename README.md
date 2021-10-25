@@ -194,13 +194,7 @@ const tsLoader = {
     };
   },
 };
-export const {
-  resolve,
-  getFormat,
-  getSource,
-  transformSource,
-  load,
-} = createLoader(tsLoader);
+export const { resolve, load } = createLoader(tsLoader);
 
 // Usage:
 import file from './file.ts';
@@ -223,13 +217,7 @@ const directoryLoader = {
     }
   },
 };
-export const {
-  resolve,
-  getFormat,
-  getSource,
-  transformSource,
-  load,
-} = createLoader(directoryLoader);
+export const { resolve, load } = createLoader(directoryLoader);
 
 // Usage:
 import Component from '@components/component.js';
