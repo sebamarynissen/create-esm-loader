@@ -107,6 +107,15 @@ describe('ESM loaders', function() {
 
 	});
 
+	it('a dynamically imported loader with sub-dependency', async function() {
+
+		const run = this.loader('./loaders/dynamic.js');
+		let result = await run(`
+		import './files/foo.js';
+		`);
+
+	});
+
 	context('^16.12', function() {
 
 		if (!semver.satisfies(process.version, '^16.12')) return;

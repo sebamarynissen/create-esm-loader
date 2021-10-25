@@ -13,7 +13,7 @@ if (process.send) {
 	try {
 		await fs.writeFile(file, code);
 		const module = await import(url);
-		process.send(module.default);
+		process.send(module.default || null);
 	} finally {
 		fs.unlink(file);
 	}
