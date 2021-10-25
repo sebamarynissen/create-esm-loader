@@ -96,4 +96,14 @@ describe('ESM loaders', function() {
 
 	});
 
+	it('chains transform hooks', async function() {
+
+		const run = this.loader('./loaders/chained.js');
+		let result = await run(`
+		export { default } from './files/string.txt';
+		`);
+		expect(result).to.equal('foofoo');
+
+	});
+
 });
