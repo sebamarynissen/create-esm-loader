@@ -1,16 +1,18 @@
 // # create-loader-test.js
-import fs from 'fs/promises';
-import { URL, fileURLToPath, pathToFileURL } from 'url';
-import path from 'path';
+import fs from 'node:fs/promises';
+import { URL, fileURLToPath, pathToFileURL } from 'node:url';
+import path from 'node:path';
+import chai, { expect } from 'chai';
+import chaiSpies from 'chai-spies';
 import create, { keys } from 'create-esm-loader';
-import chai, { expect } from './chai.js';
+chai.use(chaiSpies);
 
 const self = './create-loader-test.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('The create loader function', function() {
 
-	// Helper function for mocking a loader definition all witht he same 
+	// Helper function for mocking a loader definition all with the same 
 	// function.
 	function $(fn) {
 		return keys.reduce((mem, key) => {
