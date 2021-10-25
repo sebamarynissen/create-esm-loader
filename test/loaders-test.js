@@ -4,6 +4,7 @@ import path from 'node:path';
 import http from 'node:http';
 import cp from 'node:child_process';
 import fs from 'node:fs/promises';
+import semver from 'semver';
 import { expect } from 'chai';
 
 describe('ESM loaders', function() {
@@ -103,6 +104,22 @@ describe('ESM loaders', function() {
 		export { default } from './files/string.txt';
 		`);
 		expect(result).to.equal('foofoo');
+
+	});
+
+	context('^16.12', function() {
+
+		if (!semver.satisfies(process.version, '^16.12')) return;
+
+		it('a loader where the format is included in resolve', async function() {
+
+			const run = this.loader('./loaders/alias.js');
+			let result = await run(`
+			export { default } from './files/string.txt';
+			`);
+			expect(result).to.equal('foo');
+
+		});
 
 	});
 
