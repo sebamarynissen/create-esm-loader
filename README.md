@@ -84,6 +84,24 @@ The api of this module has not changed as it's explicit goal is to hide how Node
 Every hook is optional and can be an async function, which is useful if you need to do some async logic within it.
 If the hook doesn't return anything, other hooks will be tried until the handling of the hook is given back to Node.
 
+### Node `^16.12`
+
+If you only target node 16.12 and above, you can simplify your life a bit by specifying the format in the `resolve()` hook, omitting the need for a separate `format()` hook.
+```js
+// Will not work in Node < 16.12!!
+const loader = createLoader({
+  resolve(specifier, opts) {
+    let url = new URL(specifier, opts.parentURL);
+    if (url.pathname.endsWith('.vue')) {
+      return {
+        format: 'module',
+        url: url.href,
+      };
+    }
+  },
+});
+```
+
 ### Advanced configurations
 
 Using the basic loader configuration as a building block, it's possible to create more advanced loader setups.
