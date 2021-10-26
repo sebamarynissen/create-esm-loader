@@ -1,7 +1,7 @@
 import create from 'create-esm-loader';
 import hooks from './extension-hooks.js';
 
-export const { resolve, getFormat, getSource, transformSource, load } = create([
+export const { resolve, getFormat, getSource, transformSource, load } = await create([
 	{
 		hooks,
 		options: {

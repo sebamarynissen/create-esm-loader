@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../files');
 
-export const { resolve, load } = create({
+export const { resolve, load } = await create({
 	resolve(specifier, opts) {
 		let url = new URL(specifier, opts.parentURL);
 		if (!url.pathname.endsWith('.txt')) return;

@@ -31,4 +31,4 @@ export const {
 	getSource,
 	transformSource,
 	load,
-} = create(config);
+} = await create(config);
