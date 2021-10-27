@@ -31,7 +31,7 @@ This typically looks like
 ```js
 // loader.js
 import createLoader from 'create-esm-loader';
-export const { resolve, load } = createLoader(config);
+export const { resolve, load } = await createLoader(config);
 ```
 
 Subsequently you have to run node as 
@@ -52,7 +52,7 @@ export const {
   getSource,
   transformSource,
   load,
-} = createLoader(config);
+} = await createLoader(config);
 ```
 
 ESM loaders must be written in ESM format.
@@ -63,7 +63,7 @@ For more info, see https://nodejs.org/api/esm.html#esm_enabling.
 
 A basic loader configuration looks like this:
 ```js
-export default {
+const config = {
   resolve(specifier, opts) {
     return { url };
   },
@@ -89,7 +89,7 @@ If the hook doesn't return anything, other hooks will be tried until the handlin
 If you only target node 16.12 and above, you can simplify your life a bit by specifying the format in the `resolve()` hook, omitting the need for a separate `format()` hook.
 ```js
 // Will not work in Node < 16.12!!
-const loader = createLoader({
+export const { resolve, load } = await createLoader({
   resolve(specifier, opts) {
     let url = new URL(specifier, opts.parentURL);
     if (url.pathname.endsWith('.vue')) {
@@ -107,7 +107,7 @@ const loader = createLoader({
 Using the basic loader configuration as a building block, it's possible to create more advanced loader setups.
 The structure of a full configuration object looks like this:
 ```js
-const loader = createLoader({
+export const { resolve, load } = await createLoader({
   loaders: [{
     hooks: {
       resolve() {},
@@ -129,7 +129,7 @@ const loader = createLoader({
 
 It's also possible to specify an external loader by specifying a string, much like how webpack does it.
 ```js
-const loader = createLoader({
+export const { resolve, load } = await createLoader({
   loaders: [
     'external-loader',
     {
@@ -146,7 +146,7 @@ The goal of this is that other developers can publish commonly used loaders on n
 
 If you only have to configure a single loader, you can use the shorthand
 ```js
-const loader = createLoader({
+export const { resolve, load } = await createLoader({
   resolve() {},
   format() {},
   async transform(source, opts) {
@@ -185,6 +185,53 @@ createLoader({
 });
 ```
 
+## Standalone vs composable loaders
+
+The primary goal of this module is to make it easier to simultaneously use multiple loaders.
+Therefore, if you're writing a loader that is meant to be used by other people, the preferred pattern is
+```js
+import createLoader from 'create-esm-loader';
+
+const config = {
+  resolve() {},
+  transform() {},
+};
+export default config;
+
+export const {
+  resolve,
+  getFormat,
+  getSource,
+  transformSource,
+  load,
+} = await createLoader(config);
+```
+Using this approach, the loader can be used as a standalone loader with `node --experimental-loader=your-loader file.js`, but also in combination with another one
+```js
+import createLoader from 'create-esm-loader';
+
+export const { resolve, load } = await createLoader([
+  'your-loader',
+  'someone-elses-loader',
+  {
+    resolve() {},
+    transform() {},
+  },
+]);
+```
+If you use [node-esm-loader](https://npmjs.com/package/node-esm-loader), this can even be simplified to
+```js
+// .loaderrc.js
+export default [
+  'your-loader',
+  {
+    loader: 'someone-elses-loader',
+    options: {},
+  },
+];
+```
+with `node --experimental-loader=node-esm-loader`.
+
 ## Examples
 ### 1. Compile TypeScript on the fly
 
@@ -212,7 +259,7 @@ const tsLoader = {
     };
   },
 };
-export const { resolve, load } = createLoader(tsLoader);
+export const { resolve, load } = await createLoader(tsLoader);
 
 // Usage:
 import file from './file.ts';
@@ -235,7 +282,7 @@ const directoryLoader = {
     }
   },
 };
-export const { resolve, load } = createLoader(directoryLoader);
+export const { resolve, load } = await createLoader(directoryLoader);
 
 // Usage:
 import Component from '@components/component.js';
