@@ -236,6 +236,9 @@ with `node --experimental-loader=node-esm-loader`.
 ### 1. Compile TypeScript on the fly
 
 ```js
+import createLoader from 'create-esm-loader'
+import ts from 'typescript'
+
 const tsLoader = {
   resolve(specifier, opts) {
     if (specifier.endsWith('.ts')) {
@@ -250,13 +253,15 @@ const tsLoader = {
     }
   },
   transform(source, opts) {
-    return {
-      source: ts.transpileModule(String(source), {
+    const { url } = opts
+    if (url.endsWith('.ts')) {
+      const { outputText } = ts.transpileModule(String(source), {
         compilerOptions: {
           module: ts.ModuleKind.ES2020,
         },
-      }),
-    };
+      })
+      return { source: outputText };
+    }
   },
 };
 export const { resolve, load } = await createLoader(tsLoader);
@@ -287,3 +292,11 @@ export const { resolve, load } = await createLoader(directoryLoader);
 // Usage:
 import Component from '@components/component.js';
 ```
+
+### 3. Loaders in the Wild
+
+You can find an active [list of loaders][loaderlist] that use
+`create-esm-loader`, here:
+
+[loaderlist]: https://www.npmjs.com/package/create-esm-loader?activeTab=dependents
+
