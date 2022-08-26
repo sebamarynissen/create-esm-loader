@@ -40,7 +40,7 @@ describe('ESM loaders', function() {
 		});
 		await new Promise(resolve => server.listen(resolve));
 		const { port } = server.address();
-		const url = `http://127.0.0.1:${port}`;
+		const url = `http://127.0.0.1:${port}/foo`;
 
 		const run = this.loader('./loaders/http.js');
 		let result = await run(`
