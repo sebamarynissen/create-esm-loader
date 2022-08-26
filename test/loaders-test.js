@@ -32,7 +32,7 @@ describe('ESM loaders', function() {
 		};
 	});
 
-	it('an http loader', async function() {
+	it.skip('an http loader', async function() {
 
 		// Setup an http server first.
 		const server = new http.Server((req, res) => {
