@@ -1,6 +1,6 @@
 {
   "name": "create-esm-loader",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A utility library for creating Node loader hooks",
   "type": "module",
   "main": "lib/create-loader.js",
