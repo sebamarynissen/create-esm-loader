@@ -35,20 +35,21 @@ describe('ESM loaders', function() {
 	it('an http loader', async function() {
 
 		// Setup an http server first.
+		const foo = 'bar';
 		const server = new http.Server((req, res) => {
-			res.end(`export default import.meta.url;`);
+			res.end(`export default ${JSON.stringify(foo)};`);
 		});
 		await new Promise(resolve => server.listen(resolve));
 		const { port } = server.address();
-		const url = `http://127.0.0.1:${port}`;
+		const url = `http://127.0.0.1:${port}/foo`;
 
 		const run = this.loader('./loaders/http.js');
 		let result = await run(`
-		import url from ${JSON.stringify(url)};
-		export default url.repeat(2);
+		import str from ${JSON.stringify(url)};
+		export default str.repeat(2);
 		`);
 
-		expect(result).to.equal(url.repeat(2));
+		expect(result).to.equal(foo.repeat(2));
 		await new Promise(resolve => server.close(resolve));
 
 	});
@@ -116,9 +117,9 @@ describe('ESM loaders', function() {
 
 	});
 
-	context('^16.12', function() {
+	context('>=16.12', function() {
 
-		if (!semver.satisfies(process.version, '^16.12')) return;
+		if (!semver.satisfies(process.version, '>=16.12')) return;
 
 		it('a loader where the format is included in resolve', async function() {
 
