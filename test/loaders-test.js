@@ -32,23 +32,28 @@ describe('ESM loaders', function() {
 		};
 	});
 
-	it.skip('an http loader', async function() {
+	it.only('an http loader', async function() {
 
 		// Setup an http server first.
 		const server = new http.Server((req, res) => {
 			res.end(`export default import.meta.url;`);
 		});
+		console.log('waiting for server to listen');
 		await new Promise(resolve => server.listen(resolve));
 		const { port } = server.address();
+		console.log('server listening on', port);
 		const url = `http://127.0.0.1:${port}/foo`;
 
 		const run = this.loader('./loaders/http.js');
+		console.log('going to run the loader');
 		let result = await run(`
 		import url from ${JSON.stringify(url)};
 		export default url.repeat(2);
 		`);
 
+		console.log('result is', result);
 		expect(result).to.equal(url.repeat(2));
+		console.log('waiting for server to close now');
 		await new Promise(resolve => server.close(resolve));
 
 	});
