@@ -116,9 +116,9 @@ describe('ESM loaders', function() {
 
 	});
 
-	context('^16.12', function() {
+	context('>=16.12', function() {
 
-		if (!semver.satisfies(process.version, '^16.12')) return;
+		if (!semver.satisfies(process.version, '>=16.12')) return;
 
 		it('a loader where the format is included in resolve', async function() {
 
