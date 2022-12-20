@@ -161,6 +161,14 @@ describe('ESM loaders', function() {
 
 	});
 
+	it('an omnipotent loader that supports the webpack interface', async function() {
+
+		const run = this.loader('./loaders/omnipotent-config.js');
+		let obj = await run(`export { default } from './files/string.txt';`);
+		expect(obj).to.eql({ foo: 'bar' });
+
+	});
+
 	context('>=16.12', function() {
 
 		if (!semver.satisfies(process.version, '>=16.12')) return;
