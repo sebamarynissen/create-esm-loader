@@ -118,21 +118,33 @@ describe('ESM loaders', function() {
 	});
 
 	it('asset/source', async function() {
+
 		const run = this.loader('./loaders/asset-source.js');
 		let text = await run(`export { default } from './files/string.txt';`);
 		expect(text).to.equal('foo');
+
 	});
 
 	it('asset/inline .png', async function() {
+
 		const run = this.loader('./loaders/asset-inline.js');
 		let url = await run(`export { default } from './files/transparent.png';`);
 		expect(url).to.equal('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg==');
+
 	});
 
 	it('asset/inline .jpg', async function() {
+
 		const run = this.loader('./loaders/asset-inline.js');
 		let url = await run(`export { default } from './files/px.jpg';`);
 		expect(url).to.match(/^data:image\/jpeg;base64,/);
+
+	});
+
+	it('asset/resource', async function() {
+		const run = this.loader('./loaders/asset-resource.js');
+		let url = await run(`export { default } from './files/transparent.png';`);
+		expect(url).to.equal(new URL('./files/transparent.png', import.meta.url).href);
 	});
 
 	context('>=16.12', function() {
@@ -142,9 +154,7 @@ describe('ESM loaders', function() {
 		it('a loader where the format is included in resolve', async function() {
 
 			const run = this.loader('./loaders/alias.js');
-			let result = await run(`
-			export { default } from './files/string.txt';
-			`);
+			let result = await run(`export { default } from './files/string.txt';`);
 			expect(result).to.equal('foo');
 
 		});
