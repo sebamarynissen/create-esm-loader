@@ -147,7 +147,23 @@ describe('ESM loaders', function() {
 		let url = await run(`export { default } from './files/transparent.png';`);
 		expect(url).to.equal(new URL('./files/transparent.png', import.meta.url).href);
 
-	});	
+	});
+
+	it('mock', async function() {
+
+		const run = this.loader('./loaders/mock.js');
+		let mock = await run(`export { default } from './files/transparent.png';`)
+		expect(mock).to.eql({});
+
+	});
+
+	it('json', async function() {
+
+		const run = this.loader('./loaders/json.js');
+		let json = await run(`export { default } from './files/foo.json';`);
+		expect(json).to.eql({ foo: 'bar' });
+
+	});
 
 	it('a webpack-compatible loader', async function() {
 
