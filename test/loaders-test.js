@@ -142,9 +142,23 @@ describe('ESM loaders', function() {
 	});
 
 	it('asset/resource', async function() {
+
 		const run = this.loader('./loaders/asset-resource.js');
 		let url = await run(`export { default } from './files/transparent.png';`);
 		expect(url).to.equal(new URL('./files/transparent.png', import.meta.url).href);
+
+	});	
+
+	it('a webpack-compatible loader', async function() {
+
+		const run = this.loader('./loaders/csv-loader.js');
+		let table = await run(`export { default } from './files/table.csv';`);
+		expect(table).to.eql([
+			['country', 'capital'],
+			['BE', 'Brussels'],
+			['US', 'Washington'],
+		]);
+
 	});
 
 	context('>=16.12', function() {
