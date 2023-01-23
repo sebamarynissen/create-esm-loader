@@ -185,6 +185,18 @@ describe('ESM loaders', function() {
 
 	});
 
+	it('the webpack ts-loader', async function() {
+
+		const run = this.loader('./loaders/ts-loader.js');
+		let result = await run(`
+		import replace from './files/fn.ts';
+		
+		export default replace('I like TypeScript');
+		`);
+		expect(result).to.equal('I don\'t like TypeScript');
+
+	});
+
 	context('>=16.12', function() {
 
 		if (!semver.satisfies(process.version, '>=16.12')) return;

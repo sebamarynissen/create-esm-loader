@@ -8,8 +8,21 @@ export const { resolve, getFormat, getSource, transformSource, load } = await cr
 			},
 			use: [
 				{
-					async loader(str, ctx) {
-						let { delimiter = ',' } = ctx.options;
+					loader(input) {
+						let cb = this.callback();
+						process.nextTick(() => cb(null, input));
+						return;
+					},
+				},
+				{
+					loader(input) {
+						let cb = this.async();
+						process.nextTick(() => cb(null, input));
+					},
+				},
+				{
+					async loader(str) {
+						let { delimiter = ',' } = this.getOptions();
 						let table = str.trim().split('\n').map(x => {
 							return x.trim().split(delimiter);
 						});
