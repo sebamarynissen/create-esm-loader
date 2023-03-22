@@ -1,4 +1,5 @@
 // # test.js
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import http from 'node:http';
@@ -194,6 +195,21 @@ describe('ESM loaders', function() {
 		export default replace('I like TypeScript');
 		`);
 		expect(result).to.equal('I don\'t like TypeScript');
+
+	});
+
+	it('webpack loader with bare specifiers', async function() {
+
+		const run = this.loader('./loaders/absolute-loader.js');
+		let file = await run(`
+		import file from '#test/files/table.csv';
+
+		export default file;
+		`);
+		const require = createRequire(import.meta.url);
+		let url = new URL('./files/table.csv', import.meta.url);
+		expect(file).to.equal(url.href);
+
 
 	});
 
