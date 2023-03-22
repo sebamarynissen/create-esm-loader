@@ -84,6 +84,56 @@ The api of this module has not changed as it's explicit goal is to hide how Node
 Every hook is optional and can be an async function, which is useful if you need to do some async logic within it.
 If the hook doesn't return anything, other hooks will be tried until the handling of the hook is given back to Node.
 
+### Webpack support
+
+Since version 0.2.0, *experimental* support for Webpack like configurations has been added.
+The goal of this is to make it easier to create loaders that do a simple source transform and to provide support for existing webpack loaders, such as `ts-loader`.
+This means that you can write your loaders as
+```js
+const config = {
+  loaders: [{
+    test: /\.csv$/,
+    use: [
+      {
+        loader: 'csv-loader',
+        options: {},
+      },
+    ],
+  }],
+};
+export default config;
+export const { resolve, load } = await createLoader(config);
+```
+Under the hood this will be translated to a `{ resolve, format, fetch, transform }` configuration that is functionally equivalent.
+
+There is also support for Webpack's [asset modules](https://webpack.js.org/guides/asset-modules/):
+
+```js
+const config = {
+  loaders: [{
+    test: /\.(png|gif|jpe?g)$/,
+    
+    // Supports all 3 asset types.
+    type: 'asset/resource',
+    type: 'asset/inline',
+    type: 'asset/source',
+
+  }],
+};
+```
+
+**IMPORTANT** When using *existing* webpack loaders, it is important that the loader's source transform returns an *ES module*!
+This is a limitation of [how loader hooks work in Node](https://nodejs.org/api/esm.html#loadurl-context-nextload).
+This means that if you want to use Webpack's `ts-loader` for example, you have to configure it to output ESM in `tsconfig.json`!
+
+```js
+{
+  "compilerOptions": {
+    "module": "es2020"
+  }
+}
+```
+
 ### Node `^16.12`
 
 If you only target node 16.12 and above, you can simplify your life a bit by specifying the format in the `resolve()` hook, omitting the need for a separate `format()` hook.
@@ -270,7 +320,21 @@ export const { resolve, load } = await createLoader(tsLoader);
 import file from './file.ts';
 ```
 
-### 2. Create directory aliases
+### 2. Use a third-party loader in combination with asset modules
+
+```js
+export const { resolve, load } = await createLoader({
+  loaders: [
+    'vue-esm-loader',
+    {
+      test: /\.(png|gif|jpe?g|svg)$/,
+      type: 'asset/resource',
+    },
+  ],
+});
+```
+
+### 3. Create directory aliases
 
 ```js
 import path from 'path';
@@ -293,7 +357,7 @@ export const { resolve, load } = await createLoader(directoryLoader);
 import Component from '@components/component.js';
 ```
 
-### 3. Loaders in the Wild
+### 4. Loaders in the Wild
 
 You can find an active [list of loaders][loaderlist] that use
 `create-esm-loader`, here:
