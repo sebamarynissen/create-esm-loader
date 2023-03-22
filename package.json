@@ -14,7 +14,8 @@
     "node": ">=14.x"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "lint": "eslint lib test"
   },
   "repository": {
     "type": "git",
@@ -32,8 +33,10 @@
   },
   "homepage": "https://github.com/sebamarynissen/create-esm-loader#readme",
   "devDependencies": {
+    "@whisthub/eslint-config": "^1.0.2",
     "chai": "^4.3.4",
     "chai-spies": "^1.0.0",
+    "eslint": "^8.36.0",
     "mocha": "^9.1.3",
     "ts-loader": "^9.4.2",
     "typescript": "^4.4.4",
