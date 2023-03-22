@@ -1,8 +1,4 @@
 import create from 'create-esm-loader';
-import { pathToFileURL, fileURLToPath } from 'node:url';
-import path from 'node:path';
-
-const dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../files');
 
 export const { resolve, load } = await create({
 	resolve(specifier, opts) {

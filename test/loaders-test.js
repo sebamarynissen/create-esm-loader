@@ -1,10 +1,8 @@
 // # test.js
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import http from 'node:http';
 import cp from 'node:child_process';
-import fs from 'node:fs/promises';
 import semver from 'semver';
 import { expect } from 'chai';
 
@@ -57,7 +55,7 @@ describe('ESM loaders', function() {
 
 	it('a transpiler loader', async function() {
 
-		const run = this.loader('./loaders/transpiler.js');		
+		const run = this.loader('./loaders/transpiler.js');
 		let result = await run(`
 		import fn from './files/fn.ts';
 		export default fn('I like TypeScript');
@@ -81,7 +79,7 @@ describe('ESM loaders', function() {
 		let result = await run(`
 		import fn from ${JSON.stringify(url)};
 		export default fn('TypScript');
-		`)
+		`);
 		expect(result).to.equal('JavaScript');
 
 		await new Promise(resolve => server.close(resolve));
@@ -112,7 +110,7 @@ describe('ESM loaders', function() {
 	it('a dynamically imported loader with sub-dependency', async function() {
 
 		const run = this.loader('./loaders/dynamic.js');
-		let result = await run(`
+		await run(`
 		import './files/foo.js';
 		`);
 
@@ -153,7 +151,7 @@ describe('ESM loaders', function() {
 	it('mock', async function() {
 
 		const run = this.loader('./loaders/mock.js');
-		let mock = await run(`export { default } from './files/transparent.png';`)
+		let mock = await run(`export { default } from './files/transparent.png';`);
 		expect(mock).to.eql({});
 
 	});
@@ -206,10 +204,8 @@ describe('ESM loaders', function() {
 
 		export default file;
 		`);
-		const require = createRequire(import.meta.url);
 		let url = new URL('./files/table.csv', import.meta.url);
 		expect(file).to.equal(url.href);
-
 
 	});
 
