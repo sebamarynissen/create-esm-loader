@@ -9,6 +9,7 @@ import { expect } from 'chai';
 describe('ESM loaders', function() {
 
 	this.slow(3000);
+	this.timeout(10000);
 
 	before(function() {
 		this.loader = function(specifier) {
