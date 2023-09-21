@@ -19,7 +19,7 @@ The aim is not to eliminate the necessity of a build step, but to make your life
 
 ## Installation
 
-```npm install create-esm-loader```
+```npm install --save-dev create-esm-loader```
 
 but you guessed that, right?
 
@@ -38,6 +38,23 @@ Subsequently you have to run node as
 ```
 node --experimental-loader ./path/to/loader.mjs your-file.js
 ```
+
+On Node 20.7 however [it is discouraged](https://nodejs.org/dist/latest-v20.x/docs/api/cli.html#--experimental-loadermodule) to use the `--experimental-loader` flag, and instead you should use `--import` in combination with `register()` from `node:module`
+```sh
+node --import ./register.js your-file.js
+```
+```js
+// register.js
+import { register } from 'node:module';
+register('./path/to/loader.mjs', import.meta.url);
+```
+
+Also have a look at [node-esm-loader](https://www.npmjs.com/package/node-esm-loader), which is built on top of this package and allows you to simply do
+```sh
+node --import node-esm-loader/register your-file.js
+```
+
+### Node 16.11 and lower
 
 Note that in Node 16.12, the loader hooks [have changed](https://nodejs.org/docs/v16.12.0/api/esm.html#esm_loaders).
 In previous versions, **including `16.11`**, you had to export `resolve()`, `getFormat()`, `getSource()` and `transformSource()`.
